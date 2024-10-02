@@ -5,8 +5,13 @@ tokens = (
     'IF', 'ELSE', 'SWITCH', 'WHILE', 'FOR', 'DO_WHILE', 'ASSIGN',
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MOD', 'POW', 'LT', 'GT',
     'LE', 'GE', 'EQ', 'NE', 'COMMENT', 'ID', 'LPAREN', 'RPAREN',
-    'LBRACE', 'RBRACE',
+    'LBRACE', 'RBRACE', 'INCLUDE', 'SEMICOLON', 'COMMA', 'LBRACK', 'RBRACK',
+    'STRING', 'NUMBER', 'FLOAT', 'AMPERSAND',
 )
+
+
+#Regra para diretivas de pré-processamento
+t_INCLUDE = r'\#\s*include\s*<([a-zA-Z0-9_.]+)>'
 
 #Regras para tokens de comandos condicionais
 t_IF     = r'if'
@@ -16,7 +21,7 @@ t_SWITCH = r'switch'
 #Regras para tokens de comandos de laço
 t_WHILE    = r'while'
 t_FOR      = r'for'
-t_DO       = r'do'
+t_DO_WHILE = r'do_while'
 
 #Regra para operador de atribuição
 t_ASSIGN = r'='
@@ -37,7 +42,7 @@ t_EQ = r'=='
 t_NE = r'!='
 
 #Regra para comentários (de linha e bloco)
-t_COMMENT = r'//.*|/\*[^*]*\*+(?:[^/*][^*]*\*+)*/'
+t_COMMENT = r'//.*|/\*.*?\*/'
 
 #Regra para identificadores
 t_ID = r'[a-zA-Z_][a-zA-Z0-9_]*'
@@ -48,8 +53,30 @@ t_RPAREN = r'\)'
 t_LBRACE = r'\{'
 t_RBRACE = r'\}'
 
+#Regras para colchetes
+t_LBRACK = r'\['
+t_RBRACK = r'\]'
+
+#Regra para vírgula
+t_COMMA = r','
+
+#Regra para ponto e vírgula
+t_SEMICOLON = r';'
+
+#Regra para strings
+t_STRING = r'"([^"\\]*(\\.[^"\\]*)*)"'
+
+#Regra para números inteiros
+t_NUMBER = r'\d+'
+
+#Regra para números reais
+t_FLOAT = r'\d+\.\d+'
+
 #Ignorar espaços em branco
-t_ignore = r'\s+'
+t_ignore = r' \t'
+
+# Regra para o operador '&'
+t_AMPERSAND = r'&'
 
 #Contador de linha
 def t_newline(t):
@@ -79,12 +106,13 @@ def process_code(data):
         if tok.type not in symbol_table:
             symbol_table[tok.type] = []
         symbol_table[tok.type].append((tok.value, tok.lineno))
-        print(f"Token: {tok.value}, Valor: {tok.value}, Linha: {tok.lineno}")
-        
+        print(f"Token: {tok.type}, Valor: {tok.value}, Linha: {tok.lineno}")
+
 #Código de exemplo em C
-with open('quick.c', 'r') as file_:
-	c_code = file_.read();
-	
+name = input();
+with open(name, 'r', encoding="utf-8") as file_:
+    c_code = file_.read();
+
 #Processar o código de entrada
 process_code(c_code)
 
