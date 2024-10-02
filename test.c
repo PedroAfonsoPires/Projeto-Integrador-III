@@ -72,5 +72,40 @@ int main() {
     }
     printf("\n");
 
+
+    #include <stdio.h>
+
+// Função para trocar os valores de duas variáveis usando ponteiros
+void trocar(int *a, int *b) {
+    int temp = *a;  // Armazena o valor de a
+    *a = *b;        // Atribui o valor de b a a
+    *b = temp;      // Atribui o valor de temp a b
+}
+
+// Função para calcular a soma de dois números usando ponteiros
+void soma(int *num1, int *num2, int *resultado) {
+    *resultado = *num1 + *num2;
+}
+
+
+    int x = 10, y = 20;
+    int resultado;
+
+    printf("Valores iniciais:\n");
+    printf("x: %d, y: %d\n", x, y);
+
+    // Exibindo endereços
+    printf("\nEndereços de memória:\n");
+    printf("&x: %p, &y: %p\n", (void*)&x, (void*)&y);
+
+    // Usando a função trocar
+    printf("\nTrocando valores de x e y...\n");
+    trocar(&x, &y);
+    printf("Valores após troca:\n");
+    printf("x: %d, y: %d\n", x, y);
+
+    // Usando a função soma
+    soma(&x, &y, &resultado);
+    printf("\nSoma de x e y: %d\n", resultado);
     return 0;
 }
