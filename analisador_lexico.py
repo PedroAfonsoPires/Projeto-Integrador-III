@@ -7,8 +7,14 @@ tokens = (
     'LE', 'GE', 'EQ', 'NE', 'COMMENT', 'ID', 'LPAREN', 'RPAREN',
     'LBRACE', 'RBRACE', 'INCLUDE', 'SEMICOLON', 'COMMA', 'LBRACK', 'RBRACK',
     'STRING', 'NUMBER', 'FLOAT', 'AMPERSAND','AND', 'PIPE', 'CHARACTER', 'OR',
+    'TYPEDEF', 'DOT', 'COLON',
 )
 
+# Regra para o caractere ':'
+t_COLON = r':'
+
+#Regra para o ponto como operador de acesso
+t_DOT = r'\.'
 
 #Regra para diretivas de pré-processamento
 t_INCLUDE = r'\#\s*include\s*<([a-zA-Z0-9_.]+)>'
@@ -45,6 +51,9 @@ t_COMMENT = r'//.*|/\*.*?\*/'
 
 #Regra para identificadores
 t_ID = r'[a-zA-Z_][a-zA-Z0-9_]*'
+
+# Regras para tokens de tipo
+t_TYPEDEF = r'typedef'
 
 #Regras para parênteses e chaves
 t_LPAREN = r'\('
