@@ -82,7 +82,8 @@ def process_code(data):
         print(f"Token: {tok.value}, Valor: {tok.value}, Linha: {tok.lineno}")
         
 #Código de exemplo em C
-with open('quick.c', 'r') as file_:
+name = input();
+with open(name, 'r') as file_:
 	c_code = file_.read();
 	
 #Processar o código de entrada
