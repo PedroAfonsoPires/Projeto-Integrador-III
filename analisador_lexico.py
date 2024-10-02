@@ -6,7 +6,7 @@ tokens = (
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MOD', 'POW', 'LT', 'GT',
     'LE', 'GE', 'EQ', 'NE', 'COMMENT', 'ID', 'LPAREN', 'RPAREN',
     'LBRACE', 'RBRACE', 'INCLUDE', 'SEMICOLON', 'COMMA', 'LBRACK', 'RBRACK',
-    'STRING', 'NUMBER', 'FLOAT', 'AMPERSAND',
+    'STRING', 'NUMBER', 'FLOAT', 'AMPERSAND','AND', 'PIPE', 'CHARACTER', 'OR',
 )
 
 
@@ -25,7 +25,6 @@ t_DO_WHILE = r'do_while'
 
 #Regra para operador de atribuição
 t_ASSIGN = r'='
-
 t_PLUS   = r'\+'
 t_MINUS  = r'-'
 t_TIMES  = r'\*'
@@ -77,6 +76,14 @@ t_ignore = r' \t'
 
 # Regra para o operador '&'
 t_AMPERSAND = r'&'
+t_AND = r'&&'
+
+# Regra para o operador '|'
+t_PIPE = r'\|'
+t_OR = r'\|\|'
+
+# Regra para caracteres
+t_CHARACTER = r"'([^'\\]*(\\.[^'\\]*)*)'"
 
 #Contador de linha
 def t_newline(t):
