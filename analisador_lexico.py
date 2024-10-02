@@ -82,16 +82,9 @@ def process_code(data):
         print(f"Token: {tok.value}, Valor: {tok.value}, Linha: {tok.lineno}")
         
 #Código de exemplo em C
-c_code = '''
-int a = 5 + 3;
-if (a < 10) {
-    a = a * 2;
-}
-// comentário de linha 
-/*
-    comentário de bloco
-*/
-'''
+with open('quick.c', 'r') as file_:
+	c_code = file_.read();
+	
 #Processar o código de entrada
 process_code(c_code)
 
