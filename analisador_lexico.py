@@ -16,7 +16,7 @@ t_SWITCH = r'switch'
 #Regras para tokens de comandos de laço
 t_WHILE    = r'while'
 t_FOR      = r'for'
-t_DO_WHILE = r'do-while'
+t_DO       = r'do'
 
 #Regra para operador de atribuição
 t_ASSIGN = r'='
