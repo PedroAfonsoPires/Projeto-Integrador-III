@@ -1,138 +1,170 @@
 import ply.lex as lex
 
-#Lista de tokens
+# Lista de tokens
 tokens = (
-    'IF', 'ELSE', 'SWITCH', 'WHILE', 'FOR', 'DO_WHILE', 'ASSIGN',
-    'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MOD', 'POW', 'LT', 'GT',
-    'LE', 'GE', 'EQ', 'NE', 'COMMENT', 'ID', 'LPAREN', 'RPAREN',
-    'LBRACE', 'RBRACE', 'INCLUDE', 'SEMICOLON', 'COMMA', 'LBRACK', 'RBRACK',
-    'STRING', 'NUMBER', 'FLOAT', 'AMPERSAND','AND', 'PIPE', 'CHARACTER', 'OR',
-    'TYPEDEF', 'DOT', 'COLON',
+    'IF',
+    'ELSE',
+    'SWITCH',
+    'WHILE',
+    'FOR',
+    'DO',
+    'ASSIGN',
+    'PLUS',
+    'MINUS',
+    'TIMES',
+    'DIVIDE',
+    'MOD',
+    'POW',
+    'LT',
+    'GT',
+    'LE',
+    'GE',
+    'EQ',
+    'NE',
+    'COMMENT',
+    'LPAREN',
+    'RPAREN',
+    'LBRACE',
+    'RBRACE',
+    'SEMICOLON',
+    'COMMA',
+    'LBRACK',
+    'RBRACK',
+    'STRING',
+    'NUMBER',
+    'AMPERSAND',
+    'AND',
+    'PIPE',
+    'CHARACTER',
+    'OR',
+    'TYPEDEF',
+    'DOT',
+    'COLON',
+    'HASH',
+    'INT',
+    'FLOAT',
+    'CHAR',
+    'DOUBLE',
+    'VOID',
+    'POINTER',
+    'TYPE',
+    'ID',
+    'PLUS_PLUS',
+    'MINUS_MINUS',
+    'PLUS_EQUAL',
+    'MINUS_EQUAL',
+    'RETURN',
 )
 
-# Regra para o caractere ':'
+# Regras para tokens
+t_COMMENT = r'//.*|/\*.*?\*/'
 t_COLON = r':'
-
-#Regra para o ponto como operador de acesso
+t_HASH = r'\#.*'
 t_DOT = r'\.'
-
-#Regra para diretivas de pré-processamento
-t_INCLUDE = r'\#\s*include\s*<([a-zA-Z0-9_.]+)>'
-
-#Regras para tokens de comandos condicionais
-t_IF     = r'if'
-t_ELSE   = r'else'
-t_SWITCH = r'switch'
-
-#Regras para tokens de comandos de laço
-t_WHILE    = r'while'
-t_FOR      = r'for'
-t_DO_WHILE = r'do_while'
-
-#Regra para operador de atribuição
+#t_IF = r'if'
+#t_ELSE = r'else'
+#t_SWITCH = r'switch'
+#t_WHILE = r'while'
+#t_FOR = r'for'
+#t_DO_WHILE = r'do_while'
 t_ASSIGN = r'='
-t_PLUS   = r'\+'
-t_MINUS  = r'-'
-t_TIMES  = r'\*'
+t_PLUS = r'\+'
+t_MINUS = r'-'
+t_TIMES = r'\*'
 t_DIVIDE = r'/'
-t_MOD    = r'%'
-t_POW    = r'\^'
-
-#Regras para operadores de comparação
+t_MOD = r'%'
+t_POW = r'\^'
 t_LT = r'<'
 t_GT = r'>'
 t_LE = r'<='
 t_GE = r'>='
 t_EQ = r'=='
 t_NE = r'!='
-
-#Regra para comentários (de linha e bloco)
-t_COMMENT = r'//.*|/\*.*?\*/'
-
-#Regra para identificadores
-t_ID = r'[a-zA-Z_][a-zA-Z0-9_]*'
-
-# Regras para tokens de tipo
 t_TYPEDEF = r'typedef'
-
-#Regras para parênteses e chaves
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
 t_LBRACE = r'\{'
 t_RBRACE = r'\}'
-
-#Regras para colchetes
 t_LBRACK = r'\['
 t_RBRACK = r'\]'
-
-#Regra para vírgula
 t_COMMA = r','
-
-#Regra para ponto e vírgula
 t_SEMICOLON = r';'
-
-#Regra para strings
 t_STRING = r'"([^"\\]*(\\.[^"\\]*)*)"'
-
-#Regra para números inteiros
 t_NUMBER = r'\d+'
-
-#Regra para números reais
-t_FLOAT = r'\d+\.\d+'
-
-#Ignorar espaços em branco
-t_ignore = r' \t'
-
-# Regra para o operador '&'
 t_AMPERSAND = r'&'
 t_AND = r'&&'
-
-# Regra para o operador '|'
 t_PIPE = r'\|'
 t_OR = r'\|\|'
-
-# Regra para caracteres
 t_CHARACTER = r"'([^'\\]*(\\.[^'\\]*)*)'"
-
-#Contador de linha
+t_INT = r'int'
+t_FLOAT = r'float'
+t_VOID = r'void'
+t_CHAR = r'char'
+t_DOUBLE = r'double'
+t_POINTER = r'\*'
+t_TYPE = r'int|float|void|char|double'
+t_PLUS_PLUS = r'\+\+'
+t_MINUS_MINUS = r'--'
+t_PLUS_EQUAL = r'\+='
+t_MINUS_EQUAL = r'-='
+#t_RETURN = r'return'
+# Contador de linha
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
 
-#Erros de caracteres ilegais
+
+# Ignorar espaços em branco e tabulações
+t_ignore = r' \t'
+
+
+# Regra para identificadores
+t_ID = r'[a-zA-Z_][a-zA-Z0-9_]*'
+
+def t_RETURN(t):
+    r'return'
+    return t
+
+def t_IF(t):
+    r'if'
+    return t
+
+def t_ELSE(t):
+    r'else'
+    return t
+
+def t_SWITCH(t):
+    r'switch'
+    return t
+
+def t_FOR(t):
+    r'for'
+    return t
+
+def t_WHILE(t):
+    r'while'
+    return t
+
+def t_DO(t):
+    r'do'
+    return t
+
+
+# Erros de caracteres ilegais
 def t_error(t):
     print(f"Caractere ilegal '{t.value[0]}' na linha {t.lexer.lineno}")
     t.lexer.skip(1)
 
-#Tabela de símbolos
-symbol_table = {}
-
-#Criar o analisador léxico
+# Criar o analisador léxico
 lexer = lex.lex()
 
-#Função para processar o código de entrada
-def process_code(data):
+# Função para processar o código de entrada
+def process_code(data, k):
     lexer.input(data)
-
-    while True:
-        tok = lexer.token()
-        if not tok:
-            break
-        #Adiciona à tabela de símbolos
-        if tok.type not in symbol_table:
-            symbol_table[tok.type] = []
-        symbol_table[tok.type].append((tok.value, tok.lineno))
-        print(f"Token: {tok.type}, Valor: {tok.value}, Linha: {tok.lineno}")
-
-#Código de exemplo em C
-name = input();
-with open(name, 'r', encoding="utf-8") as file_:
-    c_code = file_.read();
-
-#Processar o código de entrada
-process_code(c_code)
-
-#Exibir a tabela de símbolos
-print("\nTabela de Símbolos:")
-for token_type, occurrences in symbol_table.items():
-    print(f"{token_type}: {occurrences}")
+    if k != 0:
+        while True:
+            tok = lexer.token()
+            if not tok:
+                break
+            print(
+                f"Token: {tok.type}, Valor: {tok.value}, Linha: {tok.lineno}")
