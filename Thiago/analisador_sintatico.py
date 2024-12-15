@@ -188,13 +188,14 @@ def p_operador_comp(p):
                    | LE
                    | GT
                    | LT'''
+      p[0] =  p[1]
 
 def p_for_expression(p): #ARRUMAR saida
     '''for_expreression : FOR LPAREN declaration ID operadoror_comp ID SEMICOLON ID PLUS_PLUS RPAREN block
                         | FOR LPAREN declaration ID operadoror_comp ID SEMICOLON ID MINUS_MINUS RPAREN block
                         | FOR LPAREN declaration ID operadoror_comp NUMBER SEMICOLON ID PLUS_PLUS RPAREN block
                         | FOR LPAREN declaration ID operadoror_comp NUMBER SEMICOLON ID MINUS_MINUS RPAREN block'''
-    p[0] = ('for', p[3], p[4], p[6], p[8])
+    p[0] = ('for', p[3], p[4], p[5], p[6], p[8], p[9], p[11])
 
 
 def p_while_expression(p):
@@ -202,7 +203,7 @@ def p_while_expression(p):
                         | WHILE LPAREN ID operadoror_comp NUMBER RPAREN block
                         | WHILE LPAREN NUMBER operadoror_comp ID RPAREN block
                         | WHILE LPAREN NUMBER operadoror_comp NUMBER RPAREN block'''
-    p[0] = ('while', p[3], p[5])
+    p[0] = ('while', p[3], p[4], p[5], p[7])
 
 
 def p_while_do_expression(p):
@@ -210,8 +211,8 @@ def p_while_do_expression(p):
                            | DO block WHILE LPAREN ID operadoror_comp NUMBER RPAREN SEMICOLON
                            | DO block WHILE LPAREN NUMBER operadoror_comp ID RPAREN SEMICOLON
                            | DO block WHILE LPAREN NUMBER operadoror_comp NUMBER RPAREN SEMICOLON'''
-    p[0] = ('do_while', p[2], p[5])
-    
+    p[0] = ('do_while', p[2], p[5], p[6], p[7])
+
 
 def p_return(p):
     ''' return : RETURN expression SEMICOLON'''
