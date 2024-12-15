@@ -1,5 +1,6 @@
 import analisador_lexico as lex
 import analisador_sintatico as sin
+import geradorIntermediario as gi
 
 # Código de exemplo em C (para ser processado pelo analisador léxico e sintático)
 name = "quick_sort.c"
@@ -14,3 +15,10 @@ lex.process_code(c_code, 0)
 print("Analisando o código com o analisador sintático...")
 ast = sin.parse_code(c_code)
 print("Análise concluída.")
+
+# Gerar código intermediário
+print("Gerador do Código Intermediário...")
+codI = gi.process_node(ast)
+print("Código Intermediário Gerado:")
+print(codI)
+print("Geração concluída.")

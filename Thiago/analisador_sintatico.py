@@ -4,6 +4,12 @@ import sys
 
 def parse_code(data):
     parser = yacc.yacc(debug=True, debuglog=yacc.PlyLogger(sys.stderr))
+    filename = "nome.txt"
+    with open(filename, 'w') as f:
+        f.write("Regras do Parser:\n\n")
+        for rule in parser.productions:
+            f.write(f"{rule}\n")
+    print(f"Regras salvas em: {filename}")
     result = parser.parse(data)
     print("Árvore Sintática:")
     print(result)
@@ -217,3 +223,4 @@ def p_error(p):
         print(f"Erro de sintaxe na linha {p.lineno}: {p.value}")
     else:
         print("Erro de sintaxe: final inesperado.")
+
