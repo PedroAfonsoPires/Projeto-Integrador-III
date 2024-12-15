@@ -2,14 +2,15 @@ import ply.yacc as yacc
 from analisador_lexico import tokens
 import sys
 
-def parse_code(data):
+def parse_code(data, n):
     parser = yacc.yacc(debug=True, debuglog=yacc.PlyLogger(sys.stderr))
     filename = "nome.txt"
-    with open(filename, 'w') as f:
-        f.write("Regras do Parser:\n\n")
-        for rule in parser.productions:
-            f.write(f"{rule}\n")
-    print(f"Regras salvas em: {filename}")
+    if n == 1:
+        with open(filename, 'w') as f:
+            f.write("Regras do Parser:\n\n")
+            for rule in parser.productions:
+                f.write(f"{rule}\n")
+        print(f"Regras salvas em: {filename}")
     result = parser.parse(data)
     print("Árvore Sintática:")
     print(result)
@@ -104,7 +105,9 @@ def p_expression(p): #arrumar saida para pontei
                   | expression COMMA expression
                   | funct'''
 
-    if len(p) == 4:
+    if len(p) == 3:
+        p[0] =  (p[2], p[1])
+    elif len(p) == 4:
         p[0] =  (p[2], p[1], p[3])
     else:
         p[0] = p[1]
@@ -128,6 +131,8 @@ def p_parameters(p):
 
     if len(p) == 3:
         p[0] = ('parameter', p[1], p[2])  # Caso para TYPE ID
+    elif len(p) == 2:
+        p[0] = ('parameter', p[1])
     elif len(p) == 4:
         p[0] = ('parameter', p[1], f"*{p[2]}")  # Caso para TYPE TIMES ID
     elif len(p) == 6:
@@ -172,7 +177,10 @@ def p_condicional(p): #ARRUMAR SAIDA
 def p_vector(p):
     '''vector : ID LBRACK expression RBRACK
               | AMPERSAND vector'''
-
+    if len(p) == 3:
+        p[0] = (p[2], p[3])
+    else:
+        p[0] = (p[2], p[4])
 
 def p_block(p):
     '''block : LBRACE statement_list RBRACE
