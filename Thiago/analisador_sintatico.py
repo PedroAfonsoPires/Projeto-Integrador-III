@@ -144,7 +144,7 @@ def p_parameters(p):
 def p_declaration_func(p): #arrunar a saida
     '''declaration_func : TYPE ID LPAREN parameters RPAREN block
                         | TYPE ID LPAREN RPAREN block'''
-    p[0] = ('function_declaration', p[1], p[2], p[4], p[5])
+    p[0] = ('function_declaration', p[1], p[2], p[4], p[6])
 
 def p_funct(p):
     '''funct : ID LPAREN parameters RPAREN

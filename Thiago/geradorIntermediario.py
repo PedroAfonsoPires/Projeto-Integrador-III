@@ -12,6 +12,17 @@ def new_label():
     label_counter += 1
     return f"L{label_counter}"
 
+def process_parameter(parameter):
+    """Processa um parâmetro e retorna sua representação no código intermediário."""
+    if isinstance(parameter, tuple):
+        if len(parameter) == 3:  # ('parameter', TYPE, NAME)
+            _, param_type, param_name = parameter
+            return f"{param_type} {param_name}"
+        elif len(parameter) == 2:  # ('parameter', NAME)
+            _, param_name = parameter
+            return param_name
+    raise ValueError(f"Unsupported parameter structure: {parameter}")
+
 def generate_code(node):
     """Função principal para percorrer a AST e gerar código intermediário."""
     if not node:
@@ -23,7 +34,6 @@ def generate_code(node):
         return
 
     if isinstance(node, tuple) and len(node) == 2 and isinstance(node[1], tuple):
-        # Nó estruturado, ex: ('expr_stmt', ('=', 'n', '0'))
         node_type, content = node
     else:
         node_type = node[0]
@@ -82,6 +92,25 @@ def generate_code(node):
 
         intermediate_code.append(f"goto {label_start}")
         intermediate_code.append(f"{label_end}:")
+
+    elif node_type == 'function_declaration':
+        # Descompacta os elementos da declaração da função
+        return_type, function_name, parameters, body = content
+
+        # Certifique-se de que os parâmetros são iteráveis
+        if isinstance(parameters, list):
+            param_list = ", ".join([process_parameter(p) for p in parameters])
+        else:
+            param_list = ""
+
+        # Adiciona a assinatura da função ao código intermediário
+        intermediate_code.append(f"function {function_name}({param_list}) -> {return_type}")
+
+        # Processa o corpo da função
+        generate_code(body)
+
+        # Indica o fim da função no código intermediário
+        intermediate_code.append(f"end_function {function_name}")
 
     elif node_type == 'if':
         condition, block_then, *block_else = content
