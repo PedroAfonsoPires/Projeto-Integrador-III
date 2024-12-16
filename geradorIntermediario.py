@@ -94,8 +94,12 @@ def generate_code(node):
         intermediate_code.append(f"{label_end}:")
 
     elif node_type == 'function_declaration':
-        # Descompacta os elementos da declaração da função
-        return_type, function_name, parameters, body = content
+            # Descompacta os elementos da declaração da função considerando ponteiros
+        if isinstance(content[1], str) and content[1] == '*':  # Ponteiro no tipo de retorno
+            return_type = f"{content[0]} *"
+            function_name, parameters, body = content[2:]
+        else:
+            return_type, function_name, parameters, body = content
 
         # Certifique-se de que os parâmetros são iteráveis
         if isinstance(parameters, list):
@@ -248,3 +252,4 @@ def process_node(ast):
     label_counter = 0
     generate_code(ast)
     return "\n".join(intermediate_code)
+

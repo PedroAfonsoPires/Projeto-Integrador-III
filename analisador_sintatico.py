@@ -143,8 +143,13 @@ def p_parameters(p):
 
 def p_declaration_func(p): #arrunar a saida
     '''declaration_func : TYPE ID LPAREN parameters RPAREN block
-                        | TYPE ID LPAREN RPAREN block'''
-    p[0] = ('function_declaration', p[1], p[2], p[4], p[6])
+                        | TYPE ID LPAREN RPAREN block
+                        | TYPE TIMES ID LPAREN RPAREN block
+                        | TYPE TIMES ID LPAREN parameters RPAREN block'''
+    if len(p) == 7:
+        p[0] = ('function_declaration', p[1], p[2], p[4], p[6])
+    else:
+        p[0] = ('function_declaration', p[1], p[2], p[3], p[5], p[7])
 
 def p_funct(p):
     '''funct : ID LPAREN parameters RPAREN
@@ -203,6 +208,7 @@ def p_for_expression(p): #ARRUMAR saida
                         | FOR LPAREN declaration ID operadoror_comp ID SEMICOLON ID MINUS_MINUS RPAREN block
                         | FOR LPAREN declaration ID operadoror_comp NUMBER SEMICOLON ID PLUS_PLUS RPAREN block
                         | FOR LPAREN declaration ID operadoror_comp NUMBER SEMICOLON ID MINUS_MINUS RPAREN block'''
+
     p[0] = ('for', p[3], p[4], p[5], p[6], p[8], p[9], p[11])
 
 
