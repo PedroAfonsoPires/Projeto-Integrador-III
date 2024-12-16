@@ -168,6 +168,33 @@ def generate_code(node):
         temp = process_expression(content[0])
         intermediate_code.append(f"return {temp}")
 
+    elif node_type == 'declaration':
+        """
+        Processa a declaração com base no número de elementos:
+        - (TYPE, ID): Declaração simples.
+        - (TYPE, ID, ASSIGN, expression): Declaração com inicialização.
+        - (TYPE, TIMES, ID): Declaração de ponteiro.
+        - (TYPE, vector): Declaração de vetor.
+        """
+        if len(content) == 2:  # Exemplo: int a;
+            var_type, var_name = content
+            intermediate_code.append(f"declare {var_type} {var_name}")
+        elif len(content) == 3:  # Exemplo: int *a;
+            var_type, pointer, var_name = content
+            if pointer == 'pointer':
+                intermediate_code.append(f"declare {var_type} *{var_name}")
+            else:
+                raise ValueError(f"Unsupported declaration structure: {content}")
+        elif len(content) == 4:  # Exemplo: int a = expr;
+            var_type, var_name, expression = content
+            temp = process_expression(expression)
+            intermediate_code.append(f"declare {var_type} {var_name}")
+            intermediate_code.append(f"{var_name} = {temp}")
+        else:
+            raise ValueError(f"Unsupported declaration structure: {content}")
+
+
+
     else:
         raise ValueError(f"Node type {node_type} not supported!")
 
