@@ -2,18 +2,15 @@ intermediate_code = []  # Armazena as instruções do código intermediário
 temp_counter = 0
 label_counter = 0
 
-
 def new_temp():
     global temp_counter
     temp_counter += 1
     return f"t{temp_counter}"
 
-
 def new_label():
     global label_counter
     label_counter += 1
     return f"L{label_counter}"
-
 
 def generate_code(node):
     """Função principal para percorrer a AST e gerar código intermediário."""
@@ -37,13 +34,7 @@ def generate_code(node):
         intermediate_code.append(f"{temp}")
 
     elif node_type == 'declaration':
-        if len(content) == 2:  # TYPE ID
-            var_type, var_name = content
-            intermediate_code.append(f"declare {var_type} {var_name}")
-        elif len(content) == 3:  # TYPE ID = expression
-            var_type, var_name, expression = content
-            temp = process_expression(expression)
-            intermediate_code.append(f"{var_name} = {temp}")
+        process_declaration(content)
 
     elif node_type == 'preprocessor_directive':
         # Diretivas de pré-processamento, como #include
@@ -92,8 +83,6 @@ def generate_code(node):
         intermediate_code.append(f"goto {label_start}")
         intermediate_code.append(f"{label_end}:")
 
-
-
     elif node_type == 'if':
         condition, block_then, *block_else = content
         label_else = new_label() if block_else else None
@@ -114,6 +103,33 @@ def generate_code(node):
 
         intermediate_code.append(f"{label_end}:")
 
+    elif node_type == 'for':
+        # Tratando o nó 'for' com a estrutura (init, var, op, value, increment_var, increment_op, block)
+        init, var, op, value, increment_var, increment_op, block = content
+        label_start = new_label()
+        label_end = new_label()
+
+        # Processa a inicialização do 'for'
+        generate_code(init)
+
+        intermediate_code.append(f"{label_start}:")
+
+        # Processa a condição do 'for'
+        condition = (op, var, value)
+        temp = process_expression(condition)
+        intermediate_code.append(f"t1 = {temp}")
+        intermediate_code.append(f"if_false t1 goto {label_end}")
+
+        # Processa o bloco do 'for'
+        generate_code(block)
+
+        # Processa o incremento do 'for'
+        increment = (increment_op, increment_var)
+        process_expression(increment)
+
+        intermediate_code.append(f"goto {label_start}")
+        intermediate_code.append(f"{label_end}:")
+
     elif node_type == 'block':
         # Bloco é uma lista de instruções
         if isinstance(content, list):
@@ -126,7 +142,17 @@ def generate_code(node):
     else:
         raise ValueError(f"Node type {node_type} not supported!")
 
-
+def process_declaration(content):
+    """Processa declarações e adiciona ao código intermediário."""
+    if len(content) == 2:  # TYPE ID
+        var_type, var_name = content
+        intermediate_code.append(f"declare {var_type} {var_name}")
+    elif len(content) == 3:  # TYPE ID = expression
+        var_type, var_name, expression = content
+        temp = process_expression(expression)
+        intermediate_code.append(f"{var_name} = {temp}")
+    else:
+        raise ValueError(f"Unsupported declaration structure: {content}")
 
 def process_expression(expression):
     """Processa expressões e retorna o nome do temporário que armazena o resultado."""
@@ -154,7 +180,6 @@ def process_expression(expression):
         return temp
     else:
         raise ValueError(f"Expression {expression} not supported!")
-
 
 def process_node(ast):
     """Função chamada no main.py para gerar código intermediário."""
