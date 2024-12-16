@@ -13,7 +13,7 @@ lex.process_code(c_code, 0)
 
 # Executar o analisador sintático
 print("Analisando o código com o analisador sintático...")
-ast = sin.parse_code(c_code)
+ast = sin.parse_code(c_code, 0)
 print("Análise concluída.")
 
 # Gerar código intermediário
