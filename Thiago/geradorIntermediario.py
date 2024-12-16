@@ -160,9 +160,7 @@ def generate_code(node):
         intermediate_code.append(f"{label_end}:")
 
     elif node_type == 'block':
-        # Bloco é uma lista de instruções
-        if isinstance(content, list):
-            generate_code(content)  # Processa o conteúdo do bloco
+        process_block(content)
 
     elif node_type == 'return':
         temp = process_expression(content[0])
@@ -209,6 +207,11 @@ def process_declaration(content):
         intermediate_code.append(f"{var_name} = {temp}")
     else:
         raise ValueError(f"Unsupported declaration structure: {content}")
+        
+def process_block(content):
+    """Processa um bloco de instruções."""
+    if content and isinstance(content[0], list):  # Verifica se o conteúdo é uma lista de instruções
+        generate_code(content[0])  # Percorre e processa as instruções do bloco
 
 def process_expression(expression):
     """Processa expressões e retorna o nome do temporário que armazena o resultado."""
