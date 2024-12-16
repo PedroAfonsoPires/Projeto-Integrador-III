@@ -181,11 +181,14 @@ def p_condicional(p): #ARRUMAR SAIDA
 
 def p_vector(p):
     '''vector : ID LBRACK expression RBRACK
+              | ID LBRACK RBRACK
               | AMPERSAND vector'''
     if len(p) == 3:
-        p[0] = (p[2], p[3])
+        p[0] = (p[2], p[1])
+    if len(p) == 4:
+        p[0] = ('vector', p[1])
     else:
-        p[0] = (p[2], p[4])
+        p[0] = ('vector', p[1], p[3])
 
 def p_block(p):
     '''block : LBRACE statement_list RBRACE
