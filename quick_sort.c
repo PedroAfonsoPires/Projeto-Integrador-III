@@ -6,7 +6,8 @@ int main() {
 
     // Declaração com atribuição
     float z = 0;
-    float w[];
+    float w[10]; // Vetor com tamanho 10
+
     // If statement
     if (x < y) {
         z = x + y;

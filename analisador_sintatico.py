@@ -158,7 +158,7 @@ def p_funct(p):
         p[0] = ('function_call', p[1], p[3])
     else:
         p[0] = ('function_call', p[1])
-        
+
 def p_if_expression(p): #arrumar saida
     '''if_expression : IF LPAREN condicional RPAREN block
                      | IF LPAREN condicional RPAREN block ELSE block'''
@@ -198,13 +198,13 @@ def p_block(p):
 
 
 def p_operador_comp(p):
-      '''operadoror_comp : EQ
-                   | NE
-                   | GE
-                   | LE
-                   | GT
-                   | LT'''
-      p[0] =  p[1]
+    '''operadoror_comp : EQ
+                 | NE
+                 | GE
+                 | LE
+                 | GT
+                 | LT'''
+    p[0] =  p[1]
 
 def p_for_expression(p): #ARRUMAR saida
     '''for_expreression : FOR LPAREN declaration ID operadoror_comp ID SEMICOLON ID PLUS_PLUS RPAREN block
@@ -234,11 +234,10 @@ def p_while_do_expression(p):
 def p_return(p):
     ''' return : RETURN expression SEMICOLON'''
     p[0] = ('return', p[2])
-    
+
 
 def p_error(p):
     if p:
         print(f"Erro de sintaxe na linha {p.lineno}: {p.value}")
     else:
         print("Erro de sintaxe: final inesperado.")
-

@@ -1,7 +1,7 @@
 import analisador_lexico as lex
 import analisador_sintatico as sin
 import geradorIntermediario as gi
-import analisador_semantico as ase
+
 # Código de exemplo em C (para ser processado pelo analisador léxico e sintático)
 name = "quick_sort.c"
 with open(name, 'r', encoding="utf-8") as file_:

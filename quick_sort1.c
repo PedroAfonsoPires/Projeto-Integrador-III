@@ -1,6 +1,5 @@
 #include <stdio.h>
 
-int main() {
     int x = 10;
     int y = 20;
 
@@ -38,4 +37,3 @@ int main() {
         i++;
     }
     return 0;
-}
