@@ -35,7 +35,7 @@ symbol_table = semantic_analyzer.get_all_symbols()
 sem.show_symbol_table(symbol_table)
 
 print()
-
+'''
 # Gerar código intermediário
 print("Gerador do Código Intermediário...")
 codI = gi.process_node(ast, symbol_table)
@@ -44,7 +44,7 @@ print(codI)
 print("Geração concluída.")
 
 print()
-
+'''
 '''
 # Converter código intermediário para MIPS
 print("Convertendo o Código Intermediário para MIPS...")
