@@ -26,13 +26,13 @@ print()
 print("Executando o analisador semântico...")
 semantic_analyzer = sem.SemanticAnalyzer()  # Inicializa o analisador semântico
 try:
+    print(ast)
     semantic_analyzer.analyze(ast)  # Realiza a análise semântica na AST
     print("Análise Semântica concluída sem erros.")
 except RuntimeError as e:
     print(f"Erro na análise semântica: {e}")
 
 symbol_table = semantic_analyzer.get_all_symbols()
-sem.show_symbol_table(symbol_table)
 
 print()
 '''
