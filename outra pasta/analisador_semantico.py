@@ -127,21 +127,34 @@ class SemanticAnalyzer:
 
     def visit_function_declaration(self, node):
         """Visita uma declaração de função."""
-        _, return_type, name, block = node  # Extrai os elementos do nó da função
+        _, return_type, name, *params_and_block = node  # Ajusta para lidar com mais elementos
+        params = []
+        block = None
+
+        # Separa os parâmetros e o bloco de código
+        for item in params_and_block:
+            if item[0] == 'parameter':
+                params.append(item)
+            elif item[0] == 'block':
+                block = item
+
         print(f"Visiting function declaration: {name} with return type {return_type}")
+        print(f"Parameters: {params}")
 
         # Adiciona a função à tabela de símbolos no escopo global
-        self.symbol_table.add_symbol(name, {"type": f"function ({return_type})", "params": []})
+        self.symbol_table.add_symbol(name, {"type": f"function ({return_type})", "params": params})
 
         # Entra no escopo da função
         self.symbol_table.enter_scope()
 
         # Processa cada instrução no bloco da função
-        for stmt in block[1]:  # Considera que o bloco é uma lista de declarações ou instruções
-            self.visit(stmt)
+        if block:
+            for stmt in block[1]:  # Considera que o bloco contém uma lista de declarações ou instruções
+                self.visit(stmt)
 
         # Sai do escopo da função
         self.symbol_table.exit_scope()
+
 
     def visit_expr_stmt(self, node):
         """Visita uma instrução de expressão (por exemplo, atribuição ou operação)."""
@@ -304,4 +317,3 @@ class SemanticAnalyzer:
                 False
 
         raise RuntimeError(f"Erro de tipo: operação de comparação inválida entre {type(left_value)} e {type(right_value)}.")
-

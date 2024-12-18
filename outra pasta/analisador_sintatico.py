@@ -137,9 +137,9 @@ def p_parameters(p):
     elif len(p) == 2:
         p[0] = ('parameter', p[1])
     elif len(p) == 4:
-        p[0] = ('parameter', p[1], f"*{p[2]}")  # Caso para TYPE TIMES ID
+        p[0] = ('parameter', p[1], p[2], p[3])  # Caso para TYPE TIMES ID
     elif len(p) == 6:
-        p[0] = ('parameter', p[1], p[2])  # Caso para TYPE ID COMMA parameters
+        p[0] = ('parameter', p[1], p[2], p[3], p[5])  # Caso para TYPE TIMES ID COMMA parameters
     elif len(p) == 7:
         p[0] = ('parameter', p[1], f"*{p[2]}")  # Caso para TYPE TIMES ID COMMA parameters
 
@@ -192,7 +192,7 @@ def p_vector(p):
               | AMPERSAND vector'''
     if len(p) == 3:
         p[0] = (p[2], p[1])
-    if len(p) == 4:
+    elif len(p) == 4:
         p[0] = ('vector', p[1])
     else:
         p[0] = ('vector', p[1], p[3])
