@@ -61,7 +61,7 @@ def p_declaration(p): #arrumar vetor
                    | TYPE ID ASSIGN expression SEMICOLON
                    | TYPE ID ASSIGN funct
                    | TYPE ID ASSIGN block
-                   | TYPE TIMES ID
+                   | TYPE TIMES ID SEMICOLON
                    | TYPE vector
                    | TYPE vector SEMICOLON
                    | TYPE TIMES vector SEMICOLON

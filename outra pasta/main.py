@@ -38,7 +38,7 @@ print()
 
 # Gerar código intermediário
 print("Gerador do Código Intermediário...")
-codI = gi.process_node(ast)
+codI = gi.process_node(ast, symbol_table)
 print("Código Intermediário Gerado:")
 print(codI)
 print("Geração concluída.")
