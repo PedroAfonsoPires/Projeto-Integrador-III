@@ -50,9 +50,13 @@ def process_parameter(parameter):
         if len(parameter) == 3:  # ('parameter', TYPE, NAME)
             _, param_type, param_name = parameter
             return f"{param_type} {param_name}"
-        elif len(parameter) == 2:  # ('parameter', NAME)
-            _, param_name = parameter
-            return param_name
+        elif len(parameter) == 4:  # ('parameter', TYPE, '*', NAME) para ponteiros
+            _, param_type, _, param_name = parameter
+            return f"{param_type}* {param_name}"
+        elif len(parameter) == 5 and isinstance(parameter[4], tuple):  # Parâmetro composto
+            _, param_type, _, param_name, sub_param = parameter
+            sub_param_str = process_parameter(sub_param)
+            return f"{param_type}* {param_name}, {sub_param_str}"
     elif isinstance(parameter, str):  # Valor literal como strings
         return parameter
     raise ValueError(f"Unsupported parameter structure: {parameter}")
