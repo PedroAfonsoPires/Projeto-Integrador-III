@@ -92,6 +92,7 @@ def p_expression(p): #arrumar saida para pontei
                   | expression MOD expression
                   | ID
                   | NUMBER
+                  | NUMBER DOT NUMBER
                   | TIMES ID
                   | expression ASSIGN expression
                   | STRING
@@ -107,8 +108,10 @@ def p_expression(p): #arrumar saida para pontei
 
     if len(p) == 3:
         p[0] =  (p[2], p[1])
-    elif len(p) == 4:
+    elif len(p) == 4 and p[2] != '.':
         p[0] =  (p[2], p[1], p[3])
+    elif len(p) == 4 and p[2] == '.':
+        p[0] = p[1] + '.' + str(p[3])
     else:
         p[0] = p[1]
 

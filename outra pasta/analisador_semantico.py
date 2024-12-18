@@ -151,3 +151,17 @@ class SemanticAnalyzer:
 
         # Se a variável à esquerda não foi declarada, adicione à tabela de símbolos
         self.symbol_table.add_symbol(left, {"type": left_type, "value": right_value})
+
+    def visit_return(self, node):
+        """Visita uma expressão de retorno."""
+        # O nó de return deve ser algo como ('return', expressão)
+        if len(node) == 2:
+            return_expr = node[1]  # Expressão após o 'return'
+            return_value = return_expr  # Avalia a expressão do retorno #arrumar
+            print(f"Retornando o valor: {return_value}")
+            return return_value
+
+    def visit_comment(self, node):
+        """Visita um comentário e o ignora."""
+        print(f"Ignorando comentário: {node[1]}")
+
