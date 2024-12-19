@@ -1,5 +1,17 @@
 from symbol_table import SymbolTable
 
+def show_symbol_table(symbol_table):
+    """Exibe os símbolos em todos os escopos da tabela de símbolos."""
+    print("\n--- Tabela de Símbolos ---")
+    for i, scope in enumerate(reversed(symbol_table.current_scope)):
+        print(f"Escopo {len(symbol_table.current_scope) - i - 1}:")
+        if scope:
+            for name, attributes in scope.items():
+                print(f"  Name: {name}, Attributes: {attributes}")
+        else:
+            print("  [Vazio]")
+    print("--------------------------")
+
 class SemanticAnalyzer:
     def __init__(self):
         self.symbol_table = SymbolTable()
@@ -18,44 +30,24 @@ class SemanticAnalyzer:
 
     def visit(self, node):
         """Método genérico para visitar nós da AST."""
-        print(f"Visitando nó: {node}")  # Log de debug detalhado
+        print(f"Visiting node: {node}")  # Log de debug
 
-        if not node or not isinstance(node, tuple):
-            print(f"Nó inválido ou desconhecido: {node}")
-            return None
+        # Se o nó for um operador de comparação
+        if node[0] in ('<', '>', '==', '!=', '<=', '>='):
+            return self.visit_comparison_operator(node)
 
-        method_name = f"visit_{node[0]}"
-        print(f"Tentando chamar método: {method_name}")
+        # Se o nó é uma string, pode ser um identificador (nome de variável)
+        if isinstance(node, str):  # Se o nó for uma string (nome de variável)
+            return self.symbol_table.get_symbol(node)["value"]
+
+        method_name = f"visit_{node[0]}"  # Ex: visit_declaration, visit_if, etc.
         visitor = getattr(self, method_name, self.generic_visit)
         return visitor(node)
+
 
     def generic_visit(self, node):
         print(f"Warning: Nenhum visitador definido para o nó: {node[0]}")
         return None
-
-    def visit_block(self, node):
-        """Visita um bloco de código e processa suas instruções."""
-        _, statements = node  # Exemplo: ('block', [instruções])
-        for stmt in statements:
-            self.visit(stmt)
-
-    def visit_parameter(self, node):
-        """Visita um nó de parâmetro."""
-        _, param_type, *details = node
-
-        # Identifica o nome do parâmetro e verifica ponteiros
-        if len(details) == 1:
-            param_name = details[0]
-        elif len(details) == 2 and details[0] == '*':
-            param_name = details[1]  # Nome do parâmetro após o '*'
-            param_type = f"pointer({param_type})"
-        else:
-            raise RuntimeError(f"Formato de parâmetro inválido: {node}")
-
-        print(f"Visiting parameter: {param_type} {param_name}")
-        # Adiciona o parâmetro ao escopo atual na tabela de símbolos
-        self.symbol_table.add_symbol(param_name, {"type": param_type, "value": None})
-        self.report["symbols"].append({"name": param_name, "type": param_type, "value": None})
 
     def visit_preprocessor_directive(self, node):
         """Visita uma diretiva de pré-processador e a ignora."""
@@ -69,6 +61,7 @@ class SemanticAnalyzer:
         # Verifica se o tipo é um vetor (ou qualquer outra estrutura especial)
         if isinstance(var_name, tuple) and var_name[0] == 'vector':
             vector_name = var_name[1]
+            # Aqui você pode adicionar a lógica específica para vetores
             self.symbol_table.add_symbol(vector_name, {"type": f"vector({var_type})", "value": None})
             self.report["symbols"].append({"name": vector_name, "type": f"vector({var_type})", "value": None})
             return {"name": vector_name, "type": f"vector({var_type})", "value": None}
@@ -85,24 +78,30 @@ class SemanticAnalyzer:
         self.report["symbols"].append({"name": var_name, "type": var_type, "value": value})
         return {"name": var_name, "type": var_type, "value": value}
 
+
     def visit_literal(self, node):
         """Visita um valor literal e retorna seu tipo."""
-        value = node
+        value = node  # Agora trata diretamente o valor (node é o valor literal)
         if isinstance(value, str) and value.isdigit():
-            return int(value)
-        return value
+            return int(value)  # Converte strings numéricas para inteiros
+        return value  # Retorna o valor se não for um número
+
 
     def check_type_compatibility(self, type1, type2):
         """Verifica a compatibilidade de tipos."""
         if type1 is None or type2 is None:
             raise RuntimeError("Erro de compatibilidade: um dos tipos é None.")
 
+        # Tenta converter o tipo2 (valor) se for uma string representando um número
         if isinstance(type2, str):
+            # Se for uma string representando um número inteiro
             if type2.isdigit():
                 type2 = int(type2)
+            # Se for uma string representando um número de ponto flutuante
             elif type2.replace('.', '', 1).isdigit() and type2.count('.') < 2:
                 type2 = float(type2)
 
+        # Verifica a compatibilidade de tipos
         if isinstance(type2, int) and type1 == "int":
             return True
         elif isinstance(type2, float) and type1 == "float":
@@ -110,6 +109,7 @@ class SemanticAnalyzer:
         elif isinstance(type2, str) and type1 == "str":
             return True
         return False
+
 
     def generate_report(self):
         """Gera um relatório com informações coletadas durante a análise."""
@@ -122,117 +122,202 @@ class SemanticAnalyzer:
             print(f"- {error}")
         print("------------------------------------")
 
+    def get_all_symbols(self):
+        return self.symbol_table
+
     def visit_function_declaration(self, node):
         """Visita uma declaração de função."""
-        _, return_type, name, *params_and_block = node
+        _, return_type, name, *params_and_block = node  # Ajusta para lidar com mais elementos
         params = []
         block = None
 
+        # Separa os parâmetros e o bloco de código
         for item in params_and_block:
-            if isinstance(item, tuple) and item[0] == 'parameter':
+            if item[0] == 'parameter':
                 params.append(item)
-            elif isinstance(item, tuple) and item[0] == 'block':
+            elif item[0] == 'block':
                 block = item
 
         print(f"Visiting function declaration: {name} with return type {return_type}")
         print(f"Parameters: {params}")
 
+        # Adiciona a função à tabela de símbolos no escopo global
         self.symbol_table.add_symbol(name, {"type": f"function ({return_type})", "params": params})
 
+        # Entra no escopo da função
         self.symbol_table.enter_scope()
 
-        # Adiciona parâmetros ao escopo atual
-        for param in params:
-            self.visit(param)
-
+        # Processa cada instrução no bloco da função
         if block:
-            self.visit(block)
+            for stmt in block[1]:  # Considera que o bloco contém uma lista de declarações ou instruções
+                self.visit(stmt)
 
+        # Sai do escopo da função
         self.symbol_table.exit_scope()
+
 
     def visit_expr_stmt(self, node):
         """Visita uma instrução de expressão (por exemplo, atribuição ou operação)."""
-        if len(node) != 4:
-            raise RuntimeError(f"Estrutura inválida para expr_stmt: {node}")
-        _, op, left, right = node
-        print(f"Visitando expressão: {left} {op} {right}")
-        left_value = self.visit(left)
-        right_value = self.visit(right)
+        op = node[0]  # Operador (por exemplo, '=' para atribuição)
 
-        if not self.check_type_compatibility(left_value, right_value):
-            raise RuntimeError(f"Erro de tipo: {left} e {right} incompatíveis.")
+        if op != '=':
+            raise RuntimeError(f"Operação desconhecida: {op}")
+
+        if len(node) < 3:
+            raise RuntimeError(f"Erro: nó de expressão de atribuição mal formado: {node}")
+
+        left = node[1]  # Lado esquerdo da atribuição
+        right = node[2]  # Lado direito da atribuição
+
+        # Verifique se a variável à esquerda existe na tabela de símbolos
+        if left not in self.symbol_table.get_symbol(left):
+            raise RuntimeError(f"Erro: '{left}' não declarado.")
+
+        # Verifique se o lado direito é uma desreferenciação (por exemplo, ('a', '*'))
+        if isinstance(right, tuple) and right[1] == "*":
+            # Aqui, o lado direito é uma desreferenciação, então verifique se 'a' é um ponteiro
+            pointer_var = right[0]
+            pointer_type = self.symbol_table.get_symbol(pointer_var)["type"]
+            if not pointer_type.startswith("pointer"):
+                raise RuntimeError(f"Erro: '{pointer_var}' não é um ponteiro e não pode ser desreferenciado.")
+
+            # O tipo à esquerda deve ser compatível com o tipo apontado
+            pointer_base_type = pointer_type[len("pointer("):-1]  # Tipo apontado
+            left_type = self.symbol_table.get_symbol(left)["type"]
+            if left_type != pointer_base_type:
+                raise RuntimeError(f"Incompatibilidade de tipos: '{left}' não pode receber um valor do tipo {left_type}.")
+
+        else:
+            # Caso normal (sem desreferenciação)
+            right_value = self.visit(right)  # Avalia a expressão do lado direito
+            left_type = self.symbol_table.get_symbol(left)["type"]  # Tipo da variável à esquerda
+
+            if not self.check_type_compatibility(left_type, right_value):
+                raise RuntimeError(f"Incompatibilidade de tipos: '{left}' não pode receber um valor do tipo {type(right_value)}.")
+
+        # Se a variável à esquerda não foi declarada, adicione à tabela de símbolos
+        self.symbol_table.add_symbol(left, {"type": left_type, "value": right_value})
+
 
     def visit_return(self, node):
-        """Visita uma instrução de retorno."""
-        if len(node) != 2:
-            raise RuntimeError(f"Estrutura inválida para return: {node}")
-        return_expr = node[1]
-        print(f"Retornando expressão: {return_expr}")
-        self.visit(return_expr)
+        """Visita uma expressão de retorno."""
+        # O nó de return deve ser algo como ('return', expressão)
+        if len(node) == 2:
+            return_expr = node[1]  # Expressão após o 'return'
+            return_value = return_expr  # Avalia a expressão do retorno #arrumar
+            print(f"Retornando o valor: {return_value}")
+            return return_value
 
     def visit_comment(self, node):
-        """Ignora um comentário."""
+        """Visita um comentário e o ignora."""
         print(f"Ignorando comentário: {node[1]}")
 
     def visit_if(self, node):
-        """Visita uma estrutura condicional 'if'."""
-        if len(node) != 3:
-            raise RuntimeError(f"Estrutura inválida para if: {node}")
+        """Visita uma instrução 'if'."""
         _, condition, block = node
         print(f"Visiting 'if' statement with condition: {condition}")
+
+        # Avaliar a expressão condicional
         condition_value = self.visit(condition)
 
+        # Verifica se o tipo da condição é booleano ou um tipo compatível
         if not isinstance(condition_value, bool):
-            raise RuntimeError("Erro de tipo: condição não é booleana.")
+            raise RuntimeError(f"Erro de tipo: a condição de 'if' deve ser um valor booleano, mas recebeu {type(condition_value)}.")
 
-        self.visit(block)
+        # Processa o bloco de código dentro do 'if'
+        self.symbol_table.enter_scope()
+        for stmt in block:
+            self.visit(stmt)
+        self.symbol_table.exit_scope()
 
     def visit_while(self, node):
-        """Visita um laço 'while'."""
-        if len(node) != 3:
-            raise RuntimeError(f"Estrutura inválida para while: {node}")
+        """Visita uma instrução 'while'."""
         _, condition, block = node
-        print(f"Visiting 'while' loop with condition: {condition}")
+        print(f"Visiting 'while' statement with condition: {condition}")
+
+        # Avaliar a condição do 'while'
         condition_value = self.visit(condition)
 
+        # Verifica se a condição é um valor booleano
         if not isinstance(condition_value, bool):
-            raise RuntimeError("Erro de tipo: condição não é booleana.")
+            raise RuntimeError(f"Erro de tipo: a condição de 'while' deve ser um valor booleano, mas recebeu {type(condition_value)}.")
 
-        self.visit(block)
+        # Processa o bloco do 'while'
+        self.symbol_table.enter_scope()
+        for stmt in block:
+            self.visit(stmt)
+        self.symbol_table.exit_scope()
 
     def visit_do_while(self, node):
-        """Visita um laço 'do-while'."""
-        if len(node) != 3:
-            raise RuntimeError(f"Estrutura inválida para do-while: {node}")
+        """Visita uma instrução 'do-while'."""
         _, block, condition = node
-        print(f"Visiting 'do-while' loop with condition: {condition}")
-        self.visit(block)
+        print(f"Visiting 'do-while' statement with condition: {condition}")
+
+        # Processa o bloco do 'do-while'
+        self.symbol_table.enter_scope()
+        for stmt in block:
+            self.visit(stmt)
+        self.symbol_table.exit_scope()
+
+        # Avalia a condição após o bloco
         condition_value = self.visit(condition)
 
+        # Verifica se a condição é um valor booleano
         if not isinstance(condition_value, bool):
-            raise RuntimeError("Erro de tipo: condição não é booleana.")
+            raise RuntimeError(f"Erro de tipo: a condição de 'do-while' deve ser um valor booleano, mas recebeu {type(condition_value)}.")
 
     def visit_for(self, node):
-        """Visita um laço 'for'."""
-        if len(node) != 5:
-            raise RuntimeError(f"Estrutura inválida para for: {node}")
-        _, init, condition, increment, block = node
-        print(f"Visiting 'for' loop")
-        self.visit(init)
-        self.visit(condition)
+        """Visita uma instrução 'for'."""
+        # Ajuste do desempacotamento do nó 'for'
+        _, decl, condition, increment, block = node[0], node[1], node[2:5], node[5:7], node[7]
+
+        print(f"Visiting 'for' loop with condition: {condition} and increment: {increment}")
+
+        # Processa a declaração no início do 'for'
+        self.visit(decl)
+
+        # Avalia a condição do 'for'
+        condition_value = self.visit(condition)
+
+        # Verifica se a condição é um valor booleano
+        if not isinstance(condition_value, bool):
+            raise RuntimeError(f"Erro de tipo: a condição de 'for' deve ser um valor booleano, mas recebeu {type(condition_value)}.")
+
+        # Processa o bloco do 'for'
+        self.symbol_table.enter_scope()
+        for stmt in block[1]:  # Assume que o bloco contém uma lista de declarações ou instruções
+            self.visit(stmt)
+        self.symbol_table.exit_scope()
+
+        # Processa o incremento do 'for'
         self.visit(increment)
-        self.visit(block)
+
 
     def visit_comparison_operator(self, node):
-        """Visita um operador de comparação."""
-        if len(node) != 3:
-            raise RuntimeError(f"Estrutura inválida para comparison_operator: {node}")
+        """Visita um operador de comparação (como <, >, ==)."""
         operator, left, right = node
         print(f"Visiting comparison operator: {operator} between {left} and {right}")
-        left_value = self.visit(left)
-        right_value = self.visit(right)
-        return operator in ('<', '>', '==', '!=', '<=', '>=') and isinstance(left_value, (int, float)) and isinstance(right_value, (int, float))
 
-    def get_all_symbols(self):
-        """Retorna todos os símbolos da tabela de símbolos."""
-        return self.symbol_table
+        # Verifica se 'left' é uma variável e obtém seu valor
+        if isinstance(left, str):  # Se 'left' é uma string, então é uma variável
+            left_value = self.symbol_table.get_symbol(left)["value"]
+        else:
+            # Caso contrário, é um valor literal
+            left_value = self.visit(left)
+
+        # Verifica se 'right' é uma variável
+        if isinstance(right, str):  # Se 'right' é uma string, então é uma variável
+            right_value = self.symbol_table.get_symbol(right)["value"]
+        else:
+            # Caso contrário, é um valor literal
+            right_value = self.visit(right)
+
+        # Verifica se ambos os lados são numéricos (int ou float)
+        if isinstance(left_value, (int, float)) and isinstance(right_value, (int, float)):
+            return left_value < right_value if operator == '<' else \
+                left_value > right_value if operator == '>' else \
+                left_value == right_value if operator == '==' else \
+                False
+
+        raise RuntimeError(f"Erro de tipo: operação de comparação inválida entre {type(left_value)} e {type(right_value)}.")
+

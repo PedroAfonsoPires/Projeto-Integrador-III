@@ -1,33 +1,3 @@
-class SymbolTable:
-    def __init__(self, raw_table=None, filename=None):
-        self.raw_table = raw_table if raw_table is not None else {}
-        self.filename = filename
-        self.current_scope = [{}]  # Escopos empilhados para o controle de blocos
-
-    def add_symbol(self, name, attributes):
-        """Adiciona um símbolo na tabela."""
-        if name in self.current_scope[-1]:
-            raise RuntimeError(f"Erro: '{name}' já declarado no escopo atual.")
-        self.current_scope[-1][name] = attributes
-
-    def get_symbol(self, name):
-        """Busca um símbolo na tabela, respeitando os escopos."""
-        for scope in reversed(self.current_scope):
-            if name in scope:
-                return scope[name]
-        raise RuntimeError(f"Erro: '{name}' não declarado.")
-
-    def enter_scope(self):
-        """Entra em um novo escopo."""
-        self.current_scope.append({})
-
-    def exit_scope(self):
-        """Sai do escopo atual."""
-        if len(self.current_scope) == 1:
-            raise RuntimeError("Erro: Tentativa de sair do escopo global.")
-        self.current_scope.pop()
-
-
 intermediate_code = []  # Armazena as instruções do código intermediário
 temp_counter = 0
 label_counter = 0
@@ -50,16 +20,21 @@ def process_parameter(parameter):
         if len(parameter) == 3:  # ('parameter', TYPE, NAME)
             _, param_type, param_name = parameter
             return f"{param_type} {param_name}"
-        elif len(parameter) == 4:  # ('parameter', TYPE, '*', NAME) para ponteiros
+        elif len(parameter) == 4 and parameter[2] == '*':  # Ponteiro ('parameter', TYPE, '*', NAME)
             _, param_type, _, param_name = parameter
             return f"{param_type}* {param_name}"
-        elif len(parameter) == 5 and isinstance(parameter[4], tuple):  # Parâmetro composto
-            _, param_type, _, param_name, sub_param = parameter
-            sub_param_str = process_parameter(sub_param)
-            return f"{param_type}* {param_name}, {sub_param_str}"
+        elif len(parameter) == 2:  # ('parameter', NAME)
+            _, param_name = parameter
+            return param_name
+        elif len(parameter) == 5:  # Caso especial para tipos complexos
+            _, param_type, pointer_symbol, param_name, subparam = parameter
+            subparam_processed = process_parameter(subparam)
+            return f"{param_type} {pointer_symbol}{param_name}, {subparam_processed}"
     elif isinstance(parameter, str):  # Valor literal como strings
         return parameter
+
     raise ValueError(f"Unsupported parameter structure: {parameter}")
+
 
 def process_expression(expression, current_scope, symbol_table):
     """Processa expressões e retorna o nome do temporário que armazena o resultado."""
@@ -97,12 +72,21 @@ def process_declaration(content, current_scope, symbol_table):
         intermediate_code.append(f"declare {var_type} {var_name}")
         temp = process_expression(value, current_scope, symbol_table)
         intermediate_code.append(f"{var_name} = {temp}")
-    elif len(content) == 4 and content[1] == "vector":  # Declaração de vetor
-        var_type, _, vector_name = content
-        symbol_table.add_symbol(vector_name, {"type": f"{var_type}[]"})
-        intermediate_code.append(f"declare {var_type} {vector_name}[]")
+    elif len(content) == 5 and content[1] == "vector":  # Declaração de vetor
+        var_type, _, vector_name, array_initializer, values = content
+        if array_initializer == "array_initializer":
+            # Declaração do vetor
+            symbol_table.add_symbol(vector_name, {"type": f"{var_type}[]"})
+            intermediate_code.append(f"declare {var_type} {vector_name}[]")
+            # Atribuindo valores para o vetor
+            for index, value in enumerate(values):
+                temp = process_expression(value, current_scope, symbol_table)
+                intermediate_code.append(f"{vector_name}[{index}] = {temp}")
+        else:
+            raise ValueError(f"Unsupported vector initialization: {array_initializer}")
     else:
         raise ValueError(f"Unsupported declaration structure: {content}")
+
 
 def generate_code(node, current_scope, symbol_table):
     """Função principal para percorrer a AST e gerar código intermediário."""
@@ -215,3 +199,4 @@ def process_node(ast, symbol_table):
     label_counter = 0
     generate_code(ast, 1, symbol_table)  # Começa no escopo global (1)
     return "\n".join(intermediate_code)
+

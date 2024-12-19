@@ -66,7 +66,7 @@ def p_declaration(p): #arrumar vetor
                    | TYPE vector SEMICOLON
                    | TYPE TIMES vector SEMICOLON
                    | TYPE ID LBRACK RBRACK
-                   | TYPE ID LBRACK RBRACK ASSIGN expression SEMICOLON'''
+                   | TYPE ID LBRACK RBRACK ASSIGN LBRACE literal_list RBRACE SEMICOLON'''
 
     if len(p) == 4: #caso type a;
         p[0] = ('declaration', p[1], p[2])
@@ -74,8 +74,10 @@ def p_declaration(p): #arrumar vetor
         p[0] = ('declaration', p[1], 'pointer', p[3])
     elif len(p) == 6: # type a = expression
         p[0] = ('declaration', p[1], p[2], p[4])
+    elif len(p) == 10:
+        p[0] = ('declaration', p[1], 'vector', p[2], 'array_initializer', p[7])
     else:
-        p[0] = p[1]
+        p[0] = p[1], p[2], p[3]
 
 
 def p_expression_statement(p):
@@ -165,7 +167,7 @@ def p_funct(p):
         p[0] = ('function_call', p[1], p[3])
     else:
         p[0] = ('function_call', p[1])
-        
+
 def p_if_expression(p): #arrumar saida
     '''if_expression : IF LPAREN condicional RPAREN block
                      | IF LPAREN condicional RPAREN block ELSE block'''
@@ -241,7 +243,7 @@ def p_while_do_expression(p):
 def p_return(p):
     ''' return : RETURN expression SEMICOLON'''
     p[0] = ('return', p[2])
-    
+
 
 def p_error(p):
     if p:
@@ -249,3 +251,11 @@ def p_error(p):
     else:
         print("Erro de sintaxe: final inesperado.")
 
+
+def p_literal_list(p):
+    '''literal_list : NUMBER
+                    | NUMBER COMMA literal_list'''
+    if len(p) == 2:  # Caso de um único valor
+        p[0] = [p[1]]  # Lista com um único elemento
+    else:  # Caso de vários valores
+        p[0] = [p[1]] + p[3]  # Combina o valor atual com os próximos
