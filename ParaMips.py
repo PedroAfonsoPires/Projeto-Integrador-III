@@ -26,7 +26,7 @@ def allocate_register(temp):
     if spilled_var not in memory_map:
         memory_map[spilled_var] = current_memory_address
         current_memory_address += 4
-    mips_code.append(f"sw {spilled_reg}, {memory_map[spilled_var]}($sp)")
+    #mips_code.append(f"sw {spilled_reg}, {memory_map[spilled_var]}($sp)")
     del register_map[spilled_var]
 
     # Alocar o registrador desalocado para o novo temporário/variável
@@ -96,30 +96,27 @@ def process_intermediate_to_mips(intermediate_code):
             # Retorno
             _, temp = tokens
             reg = allocate_register(temp)
-            mips_code.append(f"move $v0, {reg}")
+            mips_code.append(f"addi $v0, {reg}, 0")
+
 
         elif "declare" in line:
             # Declaração
             _, var_type, var_name = tokens[:3]
-            if len(tokens) > 3:  # Vetor
-                memory_map[var_name] = current_memory_address
-                current_memory_address += 4 * int(tokens[3])
-            else:
-                memory_map[var_name] = current_memory_address
-                current_memory_address += 4
+            memory_map[var_name] = current_memory_address
+            current_memory_address += 4
 
         elif "load" in line:
-            # Carregamento em estilo C: value = *ptr;
+            # Leitura de memória: value = *ptr;
             _, ptr, dest = tokens
-            reg_ptr = allocate_register(ptr)
-            reg_dest = allocate_register(dest)
+            reg_ptr = allocate_register(ptr)  # Registrador para o ponteiro
+            reg_dest = allocate_register(dest)  # Registrador para o destino
             mips_code.append(f"lw {reg_dest}, 0({reg_ptr})")
 
         elif "store" in line:
-            # Armazenamento em estilo C: *ptr = value;
+            # Escrita na memória: *ptr = value;
             _, src, ptr = tokens
-            reg_src = allocate_register(src)
-            reg_ptr = allocate_register(ptr)
+            reg_src = allocate_register(src)  # Registrador para o valor
+            reg_ptr = allocate_register(ptr)  # Registrador para o ponteiro
             mips_code.append(f"sw {reg_src}, 0({reg_ptr})")
 
         elif "directive" in line:
