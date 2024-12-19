@@ -15,25 +15,33 @@ def new_label():
     return f"L{label_counter}"
 
 def process_parameter(parameter):
-    """Processa um parâmetro e retorna sua representação no código intermediário."""
+    """Processa um parâmetro e retorna sua representação como string."""
+    #print(parameter)
     if isinstance(parameter, tuple):
-        if len(parameter) == 3:  # ('parameter', TYPE, NAME)
-            _, param_type, param_name = parameter
-            return f"{param_type} {param_name}"
-        elif len(parameter) == 4 and parameter[2] == '*':  # Ponteiro ('parameter', TYPE, '*', NAME)
-            _, param_type, _, param_name = parameter
-            return f"{param_type}* {param_name}"
-        elif len(parameter) == 2:  # ('parameter', NAME)
-            _, param_name = parameter
-            return param_name
-        elif len(parameter) == 5:  # Caso especial para tipos complexos
-            _, param_type, pointer_symbol, param_name, subparam = parameter
-            subparam_processed = process_parameter(subparam)
-            return f"{param_type} {pointer_symbol}{param_name}, {subparam_processed}"
-    elif isinstance(parameter, str):  # Valor literal como strings
-        return parameter
+        if parameter[0] == 'parameter':
+            # Caso simples: parâmetro como ('parameter', 'int')
+            if len(parameter) == 2 or len(parameter):
+                return parameter[1]
+            # Parâmetro com tipo e modificador, como ('parameter', 'int', '*', 'a')
+            elif len(parameter) == 3:
+                return f"{parameter[1]} {parameter[2]}"
+            # Parâmetro com tipo, modificador e mais um nível de estrutura, como ('parameter', 'int', '*', 'a', ('parameter', 'int', '*', 'b'))
+            elif len(parameter) == 4:
+                return f"{parameter[1]} {parameter[2]} {process_parameter(parameter[3])}"
+            elif len(parameter) == 5:
+                # Este caso trata de ponteiros de ponteiros (e mais níveis)
+                pointer_type = f"{parameter[1]} {parameter[2]}"
+                nested_parameter = process_parameter(parameter[4])  # Processa o parâmetro aninhado
+                return f"{pointer_type} {nested_parameter}"
+            else:
+                raise ValueError(f"Unsupported parameter structure: {parameter}")
+        else:
+            raise ValueError(f"Unsupported parameter structure: {parameter}")
+    elif parameter is None:
+        return ""  # Retorna uma string vazia
+    else:
+        raise ValueError(f"Unsupported parameter type: {parameter}")
 
-    raise ValueError(f"Unsupported parameter structure: {parameter}")
 
 
 def process_expression(expression, current_scope, symbol_table):

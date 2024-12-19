@@ -110,12 +110,14 @@ def p_expression(p): #arrumar saida para pontei
 
     if len(p) == 3:
         p[0] =  (p[2], p[1])
-    elif len(p) == 4 and p[2] != '.':
+    elif len(p) == 4 and p[2] != '.' and p[2] != ',':
         p[0] =  (p[2], p[1], p[3])
+    elif len(p) == 4 and p[2] != '.' and p[2] == ',':
+        p[0] =  (p[1], p[3])
     elif len(p) == 4 and p[2] == '.':
         p[0] = p[1] + '.' + str(p[3])
     else:
-        p[0] = p[1]
+        p[0] = (p[1])
 
 def p_parameters(p):
     '''parameters : TYPE ID
@@ -136,15 +138,18 @@ def p_parameters(p):
 
     if len(p) == 3:
         p[0] = ('parameter', p[1], p[2])  # Caso para TYPE ID
-    elif len(p) == 2:
+    elif len(p) == 2 and p[1] != ',':
         p[0] = ('parameter', p[1])
-    elif len(p) == 4:
+    elif len(p) == 4 and p[2] != ',':
         p[0] = ('parameter', p[1], p[2], p[3])  # Caso para TYPE TIMES ID
+    elif len(p) == 4 and p[2] == ',':
+        p[0] = ('parameter', p[1], p[3])  # Caso para paramters COMMA parameters
+    elif len(p) == 5:
+        p[0] = ('parameter', p[1], p[2], p[4])  #
     elif len(p) == 6:
         p[0] = ('parameter', p[1], p[2], p[3], p[5])  # Caso para TYPE TIMES ID COMMA parameters
     elif len(p) == 7:
-        p[0] = ('parameter', p[1], f"*{p[2]}")  # Caso para TYPE TIMES ID COMMA parameters
-
+        p[0] = ('parameter', 'vector', p[1], p[2], p[6])  # Caso para TYPE ID LBRACK RBRACK COMMA parameters
 
 def p_declaration_func(p): #arrunar a saida
     '''declaration_func : TYPE ID LPAREN parameters RPAREN block
