@@ -248,21 +248,22 @@ class SemanticAnalyzer:
 
     def visit_while(self, node):
         """Visita uma instrução 'while'."""
-        _, condition, block = node
-        print(f"Visiting 'while' statement with condition: {condition}")
+        if len(node) < 5:
+            _, condition, block = node
+            print(f"Visiting 'while' statement with condition: {condition}")
 
-        # Avaliar a condição do 'while'
-        condition_value = self.visit(condition)
+            # Avaliar a condição do 'while'
+            condition_value = self.visit(condition)
 
-        # Verifica se a condição é um valor booleano
-        if not isinstance(condition_value, bool):
-            raise RuntimeError(f"Erro de tipo: a condição de 'while' deve ser um valor booleano, mas recebeu {type(condition_value)}.")
+            # Verifica se a condição é um valor booleano
+            if not isinstance(condition_value, bool):
+                raise RuntimeError(f"Erro de tipo: a condição de 'while' deve ser um valor booleano, mas recebeu {type(condition_value)}.")
 
-        # Processa o bloco do 'while'
-        self.symbol_table.enter_scope()
-        for stmt in block:
-            self.visit(stmt)
-        self.symbol_table.exit_scope()
+            # Processa o bloco do 'while'
+            self.symbol_table.enter_scope()
+            for stmt in block:
+                self.visit(stmt)
+            self.symbol_table.exit_scope()
 
     def visit_do_while(self, node):
         """Visita uma instrução 'do-while'."""
