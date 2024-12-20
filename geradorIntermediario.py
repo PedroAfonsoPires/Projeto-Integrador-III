@@ -125,7 +125,7 @@ def process_declaration(content, current_scope, symbol_table):
         intermediate_code.append(f"declare {var_type} {var_name}")
     elif len(content) == 3:  # Declaração com inicialização
         var_type, var_name, value = content
-        symbol_table.add_symbol(var_name, {"type": var_type})
+        #symbol_table.add_symbol(var_name, {"type": var_type})
         intermediate_code.append(f"declare {var_type} {var_name}")
         temp = process_expression(value, current_scope, symbol_table)
         intermediate_code.append(f"{var_name} = {temp}")
@@ -193,19 +193,79 @@ def generate_code(node, current_scope, symbol_table):
         intermediate_code.append(f"if_false {temp} goto {label_start}")
 
     elif node_type == 'for':
-        init, var, op, value, increment_var, increment_op, block = content
-        label_start = new_label()
-        label_end = new_label()
-        generate_code(init, current_scope, symbol_table)
-        intermediate_code.append(f"{label_start}:")
-        condition_temp = process_expression((op, var, value), current_scope, symbol_table)
-        intermediate_code.append(f"if_false {condition_temp} goto {label_end}")
-        symbol_table.enter_scope()
-        generate_code(block, current_scope, symbol_table)
-        symbol_table.exit_scope()
-        process_expression((increment_op, increment_var), current_scope, symbol_table)
-        intermediate_code.append(f"goto {label_start}")
-        intermediate_code.append(f"{label_end}:")
+        content_len = len(content)
+
+        if (content_len == 7 and content[0][0] == 'declaration'):
+            init, var, op, value, increment_var, increment_op, block = content
+            label_start = new_label()
+            label_end = new_label()
+            generate_code(init, current_scope, symbol_table)
+            intermediate_code.append(f"{label_start}:")
+            condition_temp = process_expression((op, var, value), current_scope, symbol_table)
+            intermediate_code.append(f"if_false {condition_temp} goto {label_end}")
+            symbol_table.enter_scope()
+            generate_code(block, current_scope, symbol_table)
+            symbol_table.exit_scope()
+            process_expression((increment_op, increment_var), current_scope, symbol_table)
+            intermediate_code.append(f"goto {label_start}")
+            intermediate_code.append(f"{label_end}:")
+
+        elif (content_len == 7 and content[0][0] != 'declaration'):
+            init, var, op, value, increment_var, increment_op, block = content
+            label_start = new_label()
+            label_end = new_label()
+
+            # O laço começa sem uma inicialização explícita, pois a variável `n` já foi inicializada anteriormente
+            intermediate_code.append(f"{label_start}:")
+
+            # Gerar código intermediário para a condição: n > 0
+            condition_temp = process_expression((op, var, value), current_scope, symbol_table)
+            intermediate_code.append(f"if_false {condition_temp} goto {label_end}")
+
+            # Processar o bloco dentro do laço (mesmo que vazio)
+            symbol_table.enter_scope()
+            generate_code(block, current_scope, symbol_table)
+            symbol_table.exit_scope()
+
+            # Gerar o código intermediário para o decremento: n--
+            process_expression((increment_op, increment_var), current_scope, symbol_table)
+
+            intermediate_code.append(f"goto {label_start}")
+            intermediate_code.append(f"{label_end}:")
+
+        elif content_len == 9:  # Caso de um 'for' com inicialização, condição e decremento (9 elementos)
+            var_name, eq, var_value, var_cond, op, cond_value, var_increment, increment, block = content
+
+            # Inicialização da variável
+            intermediate_code.append(f"{var_name} = {var_value}")
+
+            label_start = new_label()
+            label_end = new_label()
+
+            # Gerar o código do laço 'for'
+            intermediate_code.append(f"{label_start}:")
+
+            # Condição do laço
+            condition_temp = process_expression((op, var_name, cond_value), current_scope, symbol_table)
+            intermediate_code.append(f"if_false {condition_temp} goto {label_end}")
+
+            # Processar o bloco (no caso, incremento n++)
+            symbol_table.enter_scope()
+            generate_code(block, current_scope, symbol_table)
+            symbol_table.exit_scope()
+
+            # Decremento (n--)
+            intermediate_code.append(f"{var_name} = {var_name} - 1")
+
+            intermediate_code.append(f"goto {label_start}")
+            intermediate_code.append(f"{label_end}:")
+
+
+
+
+
+        else:
+            raise ValueError(f"Erro na estrutura do 'for', quantidade de elementos inesperada: {content_len}.")
 
     elif node_type == 'if':
         condition, block_then, *block_else = content
@@ -256,4 +316,3 @@ def process_node(ast, symbol_table):
     label_counter = 0
     generate_code(ast, 1, symbol_table)  # Começa no escopo global (1)
     return "\n".join(intermediate_code)
-
