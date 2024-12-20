@@ -68,7 +68,10 @@ class SemanticAnalyzer:
 
         # Caso normal: variável simples
         if len(node) == 4:  # Se houver valor de inicialização
-            value = node[3]
+            try:
+                value = self.visit(node[3])
+            except:
+                value = node[3]
             # Verifica a compatibilidade de tipo
             if not self.check_type_compatibility(var_type, value):
                 raise RuntimeError(f"Incompatibilidade de tipos ao inicializar '{var_name}'.")
@@ -214,21 +217,34 @@ class SemanticAnalyzer:
 
     def visit_if(self, node):
         """Visita uma instrução 'if'."""
-        _, condition, block = node
+        # Ajuste para suportar a ausência do bloco "else"
+        _, condition, then_block, *else_block = node
+        else_block = else_block[0] if else_block else None
+
         print(f"Visiting 'if' statement with condition: {condition}")
 
         # Avaliar a expressão condicional
         condition_value = self.visit(condition)
 
-        # Verifica se o tipo da condição é booleano ou um tipo compatível
+        # Verifica se o tipo da condição é booleano ou compatível
         if not isinstance(condition_value, bool):
             raise RuntimeError(f"Erro de tipo: a condição de 'if' deve ser um valor booleano, mas recebeu {type(condition_value)}.")
 
-        # Processa o bloco de código dentro do 'if'
+        # Processa o bloco "then"
+        print("Entering 'then' block:")
         self.symbol_table.enter_scope()
-        for stmt in block:
+        for stmt in then_block[1]:  # Assumindo que o bloco contém uma lista de declarações ou instruções
             self.visit(stmt)
         self.symbol_table.exit_scope()
+
+        # Processa o bloco "else", se houver
+        if else_block:
+            print("Entering 'else' block:")
+            self.symbol_table.enter_scope()
+            for stmt in else_block[1]:  # Assumindo que o bloco contém uma lista de declarações ou instruções
+                self.visit(stmt)
+            self.symbol_table.exit_scope()
+
 
     def visit_while(self, node):
         """Visita uma instrução 'while'."""
@@ -320,4 +336,18 @@ class SemanticAnalyzer:
                 False
 
         raise RuntimeError(f"Erro de tipo: operação de comparação inválida entre {type(left_value)} e {type(right_value)}.")
+
+    def visit_function_call(self, node):
+        _, function_name, parameters = node
+        print(f"Visiting function call: {function_name} with parameters: {parameters}")
+
+        # Verifica se a função foi declarada na tabela de símbolos
+        function_symbol = self.symbol_table.get_symbol(function_name)
+        if not function_symbol or "type" not in function_symbol or not function_symbol["type"].startswith("function"):
+            raise RuntimeError(f"Erro: Função '{function_name}' não declarada.")
+
+        # Processa os parâmetros da função
+        param_values = [self.visit(param) for param in parameters]
+        print(f"Function {function_name} called with {param_values}")
+        return function_symbol["type"]  # Retorna o tipo da função
 
