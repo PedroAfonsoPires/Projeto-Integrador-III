@@ -170,17 +170,36 @@ def generate_code(node, current_scope, symbol_table):
         pass  # Ignora comentários
 
     elif node_type == 'while':
-        var, op, value, block = content
+        # A estrutura é: ('while', cond1, cond2, cond3, ..., block)
+        condition_elements = content[:-1]  # Condições (antes do bloco)
+        block = content[-1]  # Bloco do laço
+
         label_start = new_label()
         label_end = new_label()
+
+        # Adiciona o rótulo de início
         intermediate_code.append(f"{label_start}:")
-        temp = process_expression((op, var, value), current_scope, symbol_table)
-        intermediate_code.append(f"if_false {temp} goto {label_end}")
+
+        # Processar condições compostas com '&&'
+        temp_conditions = []
+        for condition in condition_elements:
+            temp_conditions.append(process_expression(condition, current_scope, symbol_table))
+
+        # A condição composta será algo como (cond1 && cond2 && cond3)
+        combined_condition = " && ".join(temp_conditions)
+
+        # Verificar se a condição composta é verdadeira
+        intermediate_code.append(f"if_false {combined_condition} goto {label_end}")
+
+        # Entrar no escopo do laço
         symbol_table.enter_scope()
         generate_code(block, current_scope, symbol_table)
         symbol_table.exit_scope()
+
+        # Voltar para o início do laço
         intermediate_code.append(f"goto {label_start}")
         intermediate_code.append(f"{label_end}:")
+
 
     elif node_type == 'do_while':
         block, var, op, value = content
