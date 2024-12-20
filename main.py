@@ -3,9 +3,9 @@ import analisador_sintatico as sin
 import analisador_semantico as sem
 import geradorIntermediario as gi
 import ParaMips as pmips
-
+import sys
 # Código de exemplo em C (para ser processado pelo analisador léxico e sintático)
-name = "quick_sort.c"
+name = sys.argv[1]
 with open(name, 'r', encoding="utf-8") as file_:
     c_code = file_.read()
 
@@ -53,7 +53,7 @@ print("Código MIPS Gerado:")
 print(mips_code)
 
 # Salvar o código MIPS em um arquivo
-output_file = "quick_sort.asm"
+output_file = name + ".asm"
 with open(output_file, 'w', encoding="utf-8") as f:
     f.write(mips_code)
 print(f"Código MIPS salvo em {output_file}.")

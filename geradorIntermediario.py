@@ -49,16 +49,64 @@ def process_expression(expression, current_scope, symbol_table):
     if isinstance(expression, tuple):
         if len(expression) == 3:  # Operação binária: (op, left, right)
             op, left, right = expression
-            temp_left = process_expression(left, current_scope, symbol_table)
-            temp_right = process_expression(right, current_scope, symbol_table)
-            temp_result = new_temp()
-            intermediate_code.append(f"{temp_result} = {temp_left} {op} {temp_right}")
-            return temp_result
+
+            if op == '*':  # Multiplicação por somas sucessivas
+                temp_result = new_temp()
+                temp_index = new_temp()
+                temp_left = process_expression(left, current_scope, symbol_table)
+                temp_right = process_expression(right, current_scope, symbol_table)
+
+                # Inicializa o acumulador e o índice
+                intermediate_code.append(f"{temp_result} = 0")
+                intermediate_code.append(f"{temp_index} = 0")
+
+                # Loop de adição
+                loop_start = new_label()
+                loop_end = new_label()
+                intermediate_code.append(f"{loop_start}:")
+                intermediate_code.append(f"if {temp_index} >= {temp_right} goto {loop_end}")
+                intermediate_code.append(f"{temp_result} = {temp_result} + {temp_left}")
+                intermediate_code.append(f"{temp_index} = {temp_index} + 1")
+                intermediate_code.append(f"goto {loop_start}")
+                intermediate_code.append(f"{loop_end}:")
+
+                return temp_result
+
+            elif op == '/':  # Divisão por subtrações sucessivas
+                temp_result = new_temp()
+                temp_remainder = new_temp()
+                temp_left = process_expression(left, current_scope, symbol_table)
+                temp_right = process_expression(right, current_scope, symbol_table)
+
+                # Inicializa o quociente e o resto
+                intermediate_code.append(f"{temp_result} = 0")
+                intermediate_code.append(f"{temp_remainder} = {temp_left}")
+
+                # Loop de subtração
+                loop_start = new_label()
+                loop_end = new_label()
+                intermediate_code.append(f"{loop_start}:")
+                intermediate_code.append(f"if {temp_remainder} < {temp_right} goto {loop_end}")
+                intermediate_code.append(f"{temp_remainder} = {temp_remainder} - {temp_right}")
+                intermediate_code.append(f"{temp_result} = {temp_result} + 1")
+                intermediate_code.append(f"goto {loop_start}")
+                intermediate_code.append(f"{loop_end}:")
+
+                return temp_result
+
+            else:  # Outros operadores
+                temp_left = process_expression(left, current_scope, symbol_table)
+                temp_right = process_expression(right, current_scope, symbol_table)
+                temp_result = new_temp()
+                intermediate_code.append(f"{temp_result} = {temp_left} {op} {temp_right}")
+                return temp_result
+
         elif len(expression) == 2:  # Incremento ou decremento: (++ / --)
             op, operand = expression
             temp_operand = process_expression(operand, current_scope, symbol_table)
             intermediate_code.append(f"{operand} = {temp_operand} {op} 1")
             return operand
+
     elif isinstance(expression, str):  # Valores e variáveis
         try:
             symbol_table.get_symbol(expression)  # Verifica se é uma variável
@@ -67,6 +115,7 @@ def process_expression(expression, current_scope, symbol_table):
             return str(expression)
     else:
         raise ValueError(f"Unsupported expression: {expression}")
+
 
 def process_declaration(content, current_scope, symbol_table):
     """Processa declarações de variáveis usando a tabela de símbolos."""

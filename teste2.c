@@ -1,12 +1,5 @@
-#include <stdio.h>
+int main () {
 
-// Função principal
-int main() {
-
-    int i = 2;
-    int k;
-    k = 1 + i;
-    i = k++;
-
-    return 0;
+	printf("Hello world!");
+	return 0;
 }
