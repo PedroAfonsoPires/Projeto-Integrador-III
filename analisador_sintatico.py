@@ -131,6 +131,7 @@ def p_parameters(p):
                   | TIMES ID
                   | TIMES ID COMMA parameters
                   | ID LBRACK RBRACK
+                  | TYPE TIMES ID LBRACK RBRACK
                   | ID LBRACK RBRACK COMMA parameters
                   | vector COMMA parameters
                   | expression
@@ -145,8 +146,10 @@ def p_parameters(p):
     elif len(p) == 4 and p[2] == ',':
         p[0] = ('parameter', p[1], p[3])  # Caso para paramters COMMA parameters
     elif len(p) == 5:
-        p[0] = ('parameter', p[1], p[2], p[4])  #
-    elif len(p) == 6:
+        p[0] = ('parameter', p[1], p[2], p[4])
+    elif len(p) == 6 and p[4] == '[':
+        p[0] = ('parameter', 'vector', p[1], p[2], p[3])
+    elif len(p) == 6 and p[4] != '[':
         p[0] = ('parameter', p[1], p[2], p[3], p[5])  # Caso para TYPE TIMES ID COMMA parameters
     elif len(p) == 7:
         p[0] = ('parameter', 'vector', p[1], p[2], p[6])  # Caso para TYPE ID LBRACK RBRACK COMMA parameters
@@ -239,8 +242,12 @@ def p_while_expression(p):
     '''while_expression : WHILE LPAREN ID operadoror_comp ID RPAREN block
                         | WHILE LPAREN ID operadoror_comp NUMBER RPAREN block
                         | WHILE LPAREN NUMBER operadoror_comp ID RPAREN block
-                        | WHILE LPAREN NUMBER operadoror_comp NUMBER RPAREN block'''
-    p[0] = ('while', p[3], p[4], p[5], p[7])
+                        | WHILE LPAREN NUMBER operadoror_comp NUMBER RPAREN block
+                        | WHILE LPAREN ID operadoror_comp ID AND ID LBRACK ID RBRACK operadoror_comp ID RPAREN block'''
+    if len(p) == 15:
+        p[0] = ('while', p[3], p[4], p[5], p[6], 'vector', p[7], p[9], p[11], p[12], p[14])
+    else:
+        p[0] = ('while', p[3], p[4], p[5], p[7])
 
 
 def p_while_do_expression(p):
