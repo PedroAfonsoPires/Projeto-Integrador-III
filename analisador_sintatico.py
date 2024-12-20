@@ -231,9 +231,15 @@ def p_for_expression(p): #ARRUMAR saida
                         | FOR LPAREN ID ASSIGN expression SEMICOLON ID operadoror_comp ID SEMICOLON ID PLUS_PLUS RPAREN block
                         | FOR LPAREN ID ASSIGN expression SEMICOLON ID operadoror_comp ID SEMICOLON ID MINUS_MINUS RPAREN block
                         | FOR LPAREN ID ASSIGN expression SEMICOLON ID operadoror_comp NUMBER SEMICOLON ID PLUS_PLUS RPAREN block
-                        | FOR LPAREN ID ASSIGN expression SEMICOLON ID operadoror_comp NUMBER SEMICOLON ID MINUS_MINUS RPAREN block'''
+                        | FOR LPAREN ID ASSIGN expression SEMICOLON ID operadoror_comp NUMBER SEMICOLON ID MINUS_MINUS RPAREN block
+                        | FOR LPAREN ID SEMICOLON ID operadoror_comp ID SEMICOLON ID PLUS_PLUS RPAREN block
+                        | FOR LPAREN ID SEMICOLON ID operadoror_comp ID SEMICOLON ID MINUS_MINUS RPAREN block
+                        | FOR LPAREN ID SEMICOLON ID operadoror_comp NUMBER SEMICOLON ID PLUS_PLUS RPAREN block
+                        | FOR LPAREN ID SEMICOLON ID operadoror_comp NUMBER SEMICOLON ID MINUS_MINUS RPAREN block'''
     if p[6] == ';':
         p[0] = ('for', p[3], p[4], p[5], p[7], p[8], p[9], p[11], p[12], p[14])
+    elif len(p) == 13:
+        p[0] = ('for', p[3], p[5], p[6], p[7], p[9], p[10], p[12])
     else:
         p[0] = ('for', p[3], p[4], p[5], p[6], p[8], p[9], p[11])
 
